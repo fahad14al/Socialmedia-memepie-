@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - MemePie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="auth-card">
+            <div class="auth-header text-center">
+                <h2>Welcome Back</h2>
+                <p>Please enter your details to sign in.</p>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    {{ form.as_p }}
+                </div>
+                <button type="submit" class="btn btn-auth mb-3">Sign In</button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <span class="text-muted small">New to MemePie?</span>
+                <a href="{% url 'signup' %}" class="small text-decoration-none fw-bold ms-1">Create Account</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

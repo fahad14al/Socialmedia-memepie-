@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - MemePie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 mt-5">
+            <div class="card-body p-5">
+                <h3 class="text-center mb-4 fw-bold">Edit Profile</h3>
+                
+                {% if u_form.errors or p_form.errors %}
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                    {% for field in u_form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for field in p_form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <fieldset class="form-group mb-4">
+                        <legend class="border-bottom mb-4 small fw-bold text-muted text-uppercase">Public Info</legend>
+                        <div class="mb-3 text-center">
+                            <img src="{{ user.profile.profile_pic.url }}" class="rounded-circle border mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                            {{ p_form.profile_pic }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">First Name</label>
+                                {{ u_form.first_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">Last Name</label>
+                                {{ u_form.last_name }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Bio</label>
+                            {{ p_form.bio }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Website</label>
+                            {{ p_form.website }}
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="form-group mb-4">
+                        <legend class="border-bottom mb-4 small fw-bold text-muted text-uppercase">Account Settings</legend>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Username</label>
+                            {{ u_form.username }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Email</label>
+                            {{ u_form.email }}
+                        </div>
+                    </fieldset>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="submit">Update Profile</button>
+                        <a href="{% url 'user_profile' user.username %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

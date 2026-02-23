@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages • MemePie{% endblock %}
+
+{% block content %}
+<div class="row g-0 inbox-wrapper glass-card overflow-hidden">
+    <!-- Threads Sidebar -->
+    <div class="col-md-4 border-end inbox-sidebar">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+            <h5 class="mb-0 fw-bold">{{ user.username }}</h5>
+        </div>
+        <!-- Inbox Tabs -->
+        <div class="d-flex border-bottom text-center">
+            <a href="?tab=primary" class="flex-grow-1 py-2 text-decoration-none small fw-bold {% if not show_requests %}text-dark border-bottom border-2 border-dark{% else %}text-muted{% endif %}">
+                Primary {% if primary_count > 0 %}({{ primary_count }}){% endif %}
+            </a>
+            <a href="?tab=requests" class="flex-grow-1 py-2 text-decoration-none small fw-bold {% if show_requests %}text-dark border-bottom border-2 border-dark{% else %}text-muted{% endif %}">
+                Requests {% if request_count > 0 %}({{ request_count }}){% endif %}
+            </a>
+        </div>
+        <div class="thread-list overflow-auto" style="height: 65vh;">
+            {% for t in threads %}
+                {% with other=t.other_user %}
+                {% if other %}
+                <a href="{% url 'chat_detail' t.id %}" class="thread-item d-flex align-items-center p-3 text-decoration-none border-bottom {% if show_requests %}bg-light bg-opacity-50{% endif %} {% if t.is_unread %}unread{% endif %}">
+                    <img src="{{ other.profile.profile_pic.url }}" class="rounded-circle me-3" width="56" height="56" style="object-fit: cover;">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-0 text-dark fw-bold text-truncate">{{ other.username }}</h6>
+                            <small class="text-muted">{{ t.updated_at|timesince }}</small>
+                        </div>
+                        <p class="mb-0 text-muted text-truncate small">
+                            {% if t.messages.last %}
+                                {{ t.messages.last.sender.username }}: 
+                                {% if t.messages.last.text %}
+                                    {{ t.messages.last.text|truncatechars:30 }}
+                                {% else %}
+                                    Shared a meme
+                                {% endif %}
+                            {% else %}
+                                No messages yet
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if t.is_unread %}
+                        <div class="unread-dot ms-2"></div>
+                    {% endif %}
+                </a>
+                {% endif %}
+                {% endwith %}
+            {% empty %}
+                <div class="p-4 text-center text-muted">
+                    <p>No messages yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Chat Area Placeholder -->
+    <div class="col-md-8 d-none d-md-flex flex-column justify-content-center align-items-center text-center bg-light p-5">
+        <div class="rounded-circle border border-2 border-dark p-4 mb-3">
+            <i class="bi bi-send fs-1"></i>
+        </div>
+        <h4 class="fw-bold">Your Messages</h4>
+        <p class="text-muted">Send private photos and messages to a friend.</p>
+        <button class="btn btn-primary rounded-pill px-4 fw-bold mt-2">Send Message</button>
+    </div>
+</div>
+{% endblock %}

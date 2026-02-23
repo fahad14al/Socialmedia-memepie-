@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Suggestions - MemePie{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">People You May Know</h4>
+                <a href="{% url 'home' %}" class="btn btn-light btn-sm text-primary fw-bold">Back to Feed</a>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="suggestions-grid p-3">
+                        {% for sug_user in suggested_users %}
+                        <div class="suggestion-card-item mb-4 pb-3 border-bottom">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <a href="{% url 'user_profile' sug_user.username %}">
+                                        <img src="{{ sug_user.profile.profile_pic.url }}" class="rounded-circle me-3" width="70" height="70" style="object-fit: cover; border: 1px solid #ddd;">
+                                    </a>
+                                    <div>
+                                        <h5 class="mb-0 fw-bold">
+                                            <a href="{% url 'user_profile' sug_user.username %}" class="text-decoration-none text-dark">
+                                                {{ sug_user.first_name }} {{ sug_user.last_name }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-0">@{{ sug_user.username }}</p>
+                                        <small class="text-muted">
+                                            {% if sug_user.followers.count > 0 %}
+                                                {{ sug_user.followers.count }} followers
+                                            {% else %}
+                                                Suggested for you
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-2" style="min-width: 120px;">
+                                    <button class="btn btn-primary fw-bold" 
+                                            onclick="toggleFollowHome('{{ sug_user.username }}', this)">Follow</button>
+                                    <button class="btn btn-light fw-bold" 
+                                            onclick="this.closest('.suggestion-card-item').remove()">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <p class="text-muted">No new suggestions for now. Check back later!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function toggleFollowHome(username, btn) {
+    const res = await fetch(`/profile/${username}/follow/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+        if (data.action === 'followed') {
+            btn.innerText = 'Following';
+            btn.classList.replace('btn-primary', 'btn-outline-secondary');
+        } else {
+            btn.innerText = 'Follow';
+            btn.classList.replace('btn-outline-secondary', 'btn-primary');
+        }
+    }
+}
+</script>
+
+<style>
+.suggestion-card-item:last-child {
+    border-bottom: none !important;
+}
+.btn-primary {
+    background-color: #0866ff;
+    border-color: #0866ff;
+}
+.btn-primary:hover {
+    background-color: #0055d4;
+    border-color: #0055d4;
+}
+</style>
+{% endblock %}

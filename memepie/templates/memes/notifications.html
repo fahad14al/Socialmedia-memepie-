@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - MemePie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h3 class="mb-4">Notifications</h3>
+        <div class="notifications-list">
+            {% for notif in notifications %}
+            <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+                <div class="notif-avatar me-3">
+                    <a href="{% url 'user_profile' notif.sender.username %}">
+                        <img src="{{ notif.sender.profile.profile_pic.url }}" class="rounded-circle" width="45" height="45" style="object-fit: cover;">
+                    </a>
+                </div>
+                <div class="notif-content flex-grow-1">
+                    <p class="mb-0">
+                        <a href="{% url 'user_profile' notif.sender.username %}" class="fw-bold text-decoration-none text-dark">
+                            @{{ notif.sender.username }}
+                        </a>
+                        {% if notif.notification_type == 'follow' %}
+                        started following you.
+                        {% else %}
+                        {{ notif.notification_type|yesno:"liked your meme,commented on your meme" }}
+                        {% endif %}
+                        {% if notif.notification_type == 'comment' %}
+                        : <span class="text-muted italic">"{{ notif.text_preview|cut:notif.sender.username|cut:" commented: " }}"</span>
+                        {% endif %}
+                    </p>
+                    <small class="text-muted">{{ notif.created_at|timesince }} ago</small>
+                </div>
+                {% if notif.meme.image %}
+                <a href="{% url 'home' %}#post-{{ notif.meme.id }}">
+                    <img src="{{ notif.meme.image.url }}" width="50" height="50" style="object-fit: cover; border-radius: 4px;">
+                </a>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center py-5">
+                <i class="bi bi-bell-slash text-muted" style="font-size: 3rem;"></i>
+                <p class="mt-3">No notifications for you.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

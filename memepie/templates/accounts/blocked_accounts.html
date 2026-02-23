@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Blocked Accounts • MemePie{% endblock %}
+
+{% block content %}
+<div class="mx-auto" style="max-width: 600px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{% url 'settings' %}" class="text-muted text-decoration-none"><i class="bi bi-arrow-left fs-5"></i></a>
+        <div>
+            <h5 class="mb-0 fw-bold">Blocked Accounts</h5>
+            <small class="text-muted">{{ blocks|length }} account{{ blocks|length|pluralize }} blocked</small>
+        </div>
+    </div>
+
+    <div class="glass-card rounded-4 overflow-hidden">
+        {% for block in blocks %}
+            <div class="d-flex align-items-center p-3 {% if not forloop.last %}border-bottom{% endif %}">
+                <a href="{% url 'user_profile' block.blocked.username %}" class="text-decoration-none d-flex align-items-center flex-grow-1 gap-3">
+                    <img src="{{ block.blocked.profile.profile_pic.url }}" class="rounded-circle" width="48" height="48" style="object-fit:cover; filter: grayscale(40%);">
+                    <div>
+                        <div class="fw-bold text-dark">{{ block.blocked.username }}</div>
+                        <small class="text-muted">{{ block.blocked.get_full_name }}</small>
+                    </div>
+                </a>
+                <form action="{% url 'unblock_user' block.blocked.username %}" method="POST" class="ms-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Unblock</button>
+                </form>
+            </div>
+        {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-slash-circle fs-1 d-block mb-3 opacity-40"></i>
+                <p class="mb-0 fw-semibold">No blocked accounts</p>
+                <small>When you block someone they appear here.</small>
+            </div>
+        {% endfor %}
+    </div>
+
+    <p class="text-muted small mt-3 text-center">
+        To block a user, visit their profile and select Block.
+    </p>
+</div>
+{% endblock %}

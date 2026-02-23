@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }}'s Profile - MemePie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="auth-card text-center">
+            <div class="mb-4">
+                <img src="{{ user.profile.profile_pic.url }}" alt="{{ user.username }}" 
+                     class="rounded-circle border border-4 border-white shadow-sm" width="150" height="150" style="object-fit: cover;">
+            </div>
+            <h2 class="fw-bold mb-1">{{ user.first_name }} {{ user.last_name|default:user.username }}</h2>
+            <p class="text-muted mb-3">@{{ user.username }}</p>
+            
+            {% if user.profile.bio %}
+                <p class="mb-4 lead">{{ user.profile.bio }}</p>
+            {% else %}
+                <p class="text-muted italic mb-4">No bio yet. Tell us something about yourself!</p>
+            {% endif %}
+
+            <div class="d-flex justify-content-center gap-3 mb-4">
+                {% if user.profile.website %}
+                    <a href="{{ user.profile.website }}" class="btn btn-outline-dark" target="_blank">
+                        Website
+                    </a>
+                {% endif %}
+            </div>
+
+            <hr class="mb-4">
+            
+            <div class="row text-start mb-4">
+                <div class="col-sm-4 text-muted">Email</div>
+                <div class="col-sm-8 fw-medium">{{ user.email }}</div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <a href="#" class="btn btn-primary">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

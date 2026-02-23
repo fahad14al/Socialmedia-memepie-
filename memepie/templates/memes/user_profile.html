@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }}'s Profile - MemePie{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Profile Header -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body text-center p-5">
+                    <img src="{{ profile_user.profile.profile_pic.url }}" class="author-avatar mx-auto mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                    <h2 class="fw-bold mb-1">{{ profile_user.first_name }} {{ profile_user.last_name }}</h2>
+                    <p class="text-muted mb-3">@{{ profile_user.username }}</p>
+                    
+                    {% if profile_user.profile.bio %}
+                    <p class="lead mb-4">{{ profile_user.profile.bio }}</p>
+                    {% else %}
+                    <p class="text-muted italic mb-4">No bio yet.</p>
+                    {% endif %}
+
+                    <div class="mb-4 d-flex justify-content-center gap-2 flex-wrap">
+                        {% if user.is_authenticated and user != profile_user %}
+                        <button id="follow-btn" onclick="toggleFollow('{{ profile_user.username }}')" class="btn {% if is_following %}btn-outline-secondary{% else %}btn-primary{% endif %} px-4">
+                            {% if is_following %}Following{% else %}Follow{% endif %}
+                        </button>
+                        <a href="{% url 'start_chat' profile_user.username %}" class="btn btn-light border px-4">Message</a>
+                        <!-- Block / Unblock -->
+                        {% if is_blocked %}
+                        <form action="{% url 'unblock_user' profile_user.username %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger px-4">Unblock</button>
+                        </form>
+                        {% else %}
+                        <form action="{% url 'block_user' profile_user.username %}" method="POST" style="display:inline;" onsubmit="return confirm('Block @{{ profile_user.username }}? They won\'t be able to interact with you.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-slash-circle me-1"></i>Block
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% elif user == profile_user %}
+                        <a href="{% url 'profile_edit' %}" class="btn btn-outline-primary px-4">Edit Profile</a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-center gap-4 border-top pt-3 text-muted">
+                        <div class="stat-item">
+                            <strong class="text-dark d-block h5 mb-0">{{ memes.count }}</strong> 
+                            <span class="small">Posts</span>
+                        </div>
+                        <div class="stat-item cursor-pointer" onclick="openFollowModal('followers', '{{ profile_user.username }}')">
+                            <strong class="text-dark d-block h5 mb-0" id="followers-count">{{ followers_count }}</strong> 
+                            <span class="small">Followers</span>
+                        </div>
+                        <div class="stat-item cursor-pointer" onclick="openFollowModal('following', '{{ profile_user.username }}')">
+                            <strong class="text-dark d-block h5 mb-0" id="following-count">{{ following_count }}</strong> 
+                            <span class="small">Following</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Follow Modal -->
+            <div class="modal fade" id="followModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header border-bottom-0 pb-0">
+                            <h6 class="modal-title w-100 text-center fw-bold" id="followModalTitle">Followers</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="follow-list-content" class="list-group list-group-flush">
+                                <!-- Users will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memes Grid / List -->
+            <h4 class="mb-4 fw-bold">Posted Memes</h4>
+            <div class="feed-container" style="padding-top: 0;">
+                {% for meme in memes %}
+                <div class="post-card" id="post-{{ meme.id }}">
+                    <!-- Header -->
+                    <div class="post-header">
+                        <a href="{% url 'user_profile' meme.author.username %}" class="text-decoration-none">
+                            <img src="{{ meme.author.profile.profile_pic.url }}" class="author-avatar" alt="{{ meme.author.username }}">
+                        </a>
+                        <div class="author-info">
+                            <a href="{% url 'user_profile' meme.author.username %}" class="text-decoration-none text-dark">
+                                <span class="author-name">@{{ meme.author.username }}</span>
+                            </a>
+                            <span class="post-date text-muted small">{{ meme.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+
+                    <!-- Caption -->
+                    <div class="post-caption">
+                        {{ meme.caption }}
+                    </div>
+
+                    <!-- Image -->
+                    <div class="post-image-container">
+                        <img src="{{ meme.image.url }}" class="post-image" alt="{{ meme.caption }}">
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="post-stats">
+                        <span id="like-count-{{ meme.id }}"><span class="badge bg-light text-dark">faa</span> {{ meme.total_faa_likes }} likes</span>
+                        <span id="comment-count-{{ meme.id }}">{{ meme.comments.count }} comments</span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="post-actions">
+                        <a href="javascript:void(0)" class="action-btn like-btn {% if user in meme.faa_likes.all %}active{% endif %}" 
+                           id="like-btn-{{ meme.id }}" onclick="likeMeme('{{ meme.id }}')">
+                            <img src="{% static 'img/faa_reaction.png' %}" class="faa-reaction-img" alt="faa" id="faa-icon-{{ meme.id }}"> faa
+                        </a>
+                        <a href="javascript:void(0)" class="action-btn" onclick="toggleComments('{{ meme.id }}')">
+                            <i class="bi bi-chat"></i> Comment
+                        </a>
+                        <a href="javascript:void(0)" class="action-btn" onclick="openShareModal('{{ meme.id }}')">
+                            <i class="bi bi-share"></i> Share
+                        </a>
+                    </div>
+
+                    <!-- Comments Area -->
+                    <div class="comment-section" id="comment-section-{{ meme.id }}">
+                        <div class="comments-list" id="comments-list-{{ meme.id }}">
+                            {% for comment in meme.comments.all %}
+                                {% if not comment.parent %}
+                                <div class="comment-wrapper" id="comment-wrapper-{{ comment.id }}">
+                                    <div class="comment-item">
+                                        <a href="{% url 'user_profile' comment.author.username %}">
+                                            <img src="{{ comment.author.profile.profile_pic.url }}" class="comment-avatar-img" alt="{{ comment.author.username }}">
+                                        </a>
+                                        <div class="comment-bubble">
+                                            <a href="{% url 'user_profile' comment.author.username %}" class="text-decoration-none">
+                                                <span class="comment-author">@{{ comment.author.username }}</span>
+                                            </a>
+                                            <div class="comment-content">{{ comment.content }}</div>
+                                            {% if comment.total_likes > 0 %}
+                                            <div class="comment-likes-badge" id="comment-likes-badge-{{ comment.id }}">
+                                                <img src="{% static 'img/faa_reaction.png' %}" width="12" alt="likes">
+                                                <span class="likes-count">{{ comment.total_likes }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="comment-actions">
+                                        <a href="javascript:void(0)" class="comment-action-link {% if user in comment.likes.all %}active{% endif %}" 
+                                           onclick="likeComment('{{ comment.id }}')" id="comment-like-{{ comment.id }}">Like</a>
+                                        <a href="javascript:void(0)" class="comment-action-link" onclick="showReplyField('{{ meme.id }}', '{{ comment.id }}', '{{ comment.author.username }}')">Reply</a>
+                                        <span class="text-muted small">{{ comment.created_at|timesince }}</span>
+                                    </div>
+
+                                    <!-- Replies -->
+                                    <div class="replies-container" id="replies-{{ comment.id }}">
+                                        {% for reply in comment.replies.all %}
+                                        <div class="comment-item reply-item">
+                                            <a href="{% url 'user_profile' reply.author.username %}">
+                                                <img src="{{ reply.author.profile.profile_pic.url }}" class="comment-avatar-img small" alt="{{ reply.author.username }}">
+                                            </a>
+                                            <div class="comment-bubble">
+                                                <a href="{% url 'user_profile' reply.author.username %}" class="text-decoration-none">
+                                                    <span class="comment-author">@{{ reply.author.username }}</span>
+                                                </a>
+                                                <div class="comment-content">{{ reply.content }}</div>
+                                                {% if reply.total_likes > 0 %}
+                                                <div class="comment-likes-badge" id="comment-likes-badge-{{ reply.id }}">
+                                                    <img src="{% static 'img/faa_reaction.png' %}" width="10" alt="likes">
+                                                    <span class="likes-count">{{ reply.total_likes }}</span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="comment-actions reply-item" style="margin-top: -5px;">
+                                            <a href="javascript:void(0)" class="comment-action-link {% if user in reply.likes.all %}active{% endif %}" 
+                                               onclick="likeComment('{{ reply.id }}')" id="comment-like-{{ reply.id }}">Like</a>
+                                            <span class="text-muted small">{{ reply.created_at|timesince }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% empty %}
+                            <p class="text-muted small px-2 no-comments" id="no-comments-{{ meme.id }}">No comments yet.</p>
+                            {% endfor %}
+                        </div>
+
+                        {% if user.is_authenticated %}
+                        <div class="comment-form-container mt-2">
+                            <form id="comment-form-ele-{{ meme.id }}" onsubmit="submitComment(event, '{{ meme.id }}')" class="w-100">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="text" id="comment-input-{{ meme.id }}" name="content" class="form-control form-control-sm" placeholder="Write a comment..." required>
+                                    <input type="hidden" name="parent_id" id="parent-id-{{ meme.id }}" value="">
+                                    <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                                </div>
+                                <div id="reply-indicator-{{ meme.id }}" class="small text-muted mt-1" style="display: none;">
+                                    Replying to <span id="reply-to-user-{{ meme.id }}"></span>
+                                    <a href="javascript:void(0)" class="text-danger ms-2" onclick="cancelReply('{{ meme.id }}')">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5 card border-0 shadow-sm">
+                    <p class="text-muted">No memes posted yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts (Duplicate for now, should be in a separate JS file eventually) -->
+<style>
+@keyframes faa-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5) rotate(10deg); }
+    100% { transform: scale(1); }
+}
+.faa-pop-anim {
+    animation: faa-pop 0.4s ease-out;
+}
+.cursor-pointer { cursor: pointer; }
+.cursor-pointer:hover { text-decoration: underline; }
+
+.follow-item-pic {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+</style>
+
+<script>
+async function toggleFollow(username) {
+    const res = await fetch(`/profile/${username}/follow/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+        const btn = document.getElementById('follow-btn');
+        if (data.action === 'followed') {
+            btn.innerText = 'Following';
+            btn.classList.replace('btn-primary', 'btn-outline-secondary');
+        } else {
+            btn.innerText = 'Follow';
+            btn.classList.replace('btn-outline-secondary', 'btn-primary');
+        }
+        document.getElementById('followers-count').innerText = data.followers_count;
+        document.getElementById('following-count').innerText = data.following_count;
+    }
+}
+
+let followModal;
+function openFollowModal(type, username) {
+    if (!followModal) {
+        followModal = new bootstrap.Modal(document.getElementById('followModal'));
+    }
+    document.getElementById('followModalTitle').innerText = type === 'followers' ? 'Followers' : 'Following';
+    const content = document.getElementById('follow-list-content');
+    content.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+    followModal.show();
+    
+    fetch(`/profile/${username}/${type}/`)
+        .then(res => res.json())
+        .then(data => {
+            content.innerHTML = '';
+            if (data.users.length === 0) {
+                content.innerHTML = `<p class="text-muted text-center p-3">No ${type} yet.</p>`;
+                return;
+            }
+            data.users.forEach(u => {
+                const item = document.createElement('a');
+                item.href = `/profile/${u.username}/`;
+                item.className = 'list-group-item list-group-item-action d-flex align-items-center gap-3 border-0 py-2';
+                item.innerHTML = `
+                    <img src="${u.profile_pic_url}" class="follow-item-pic">
+                    <span class="fw-bold">@${u.username}</span>
+                `;
+                content.appendChild(item);
+            });
+        });
+}
+
+function toggleComments(memeId) {
+    const commentSection = document.getElementById('comment-section-' + memeId);
+    if (commentSection.classList.contains('active')) {
+        commentSection.classList.remove('active');
+    } else {
+        commentSection.classList.add('active');
+        const input = document.getElementById('comment-input-' + memeId);
+        if (input) input.focus();
+    }
+}
+
+async function likeMeme(memeId) {
+    const res = await fetch(`/like/${memeId}/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+    const btn = document.getElementById('like-btn-' + memeId);
+    const icon = document.getElementById('faa-icon-' + memeId);
+    const count = document.getElementById('like-count-' + memeId);
+    
+    if (data.liked) {
+        btn.classList.add('active');
+        icon.classList.add('faa-pop-anim');
+        setTimeout(() => icon.classList.remove('faa-pop-anim'), 400);
+    } else {
+        btn.classList.remove('active');
+    }
+    count.innerHTML = `<span class="badge bg-light text-dark">faa</span> ${data.total_likes} likes`;
+}
+
+async function likeComment(commentId) {
+    const res = await fetch(`/comment/like/${commentId}/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+    const btn = document.getElementById('comment-like-' + commentId);
+    if (data.liked) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+    
+    let bubble = btn.closest('.comment-wrapper, .reply-item').querySelector('.comment-bubble');
+    let badge = document.getElementById('comment-likes-badge-' + commentId);
+    if (data.total_likes > 0) {
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.id = 'comment-likes-badge-' + commentId;
+            badge.className = 'comment-likes-badge';
+            badge.innerHTML = `<img src="/static/img/faa_reaction.png" width="${btn.closest('.reply-item') ? 10 : 12}" alt="likes"> <span class="likes-count">${data.total_likes}</span>`;
+            bubble.appendChild(badge);
+        } else {
+            badge.querySelector('.likes-count').innerText = data.total_likes;
+        }
+    } else if (badge) {
+        badge.remove();
+    }
+}
+
+function showReplyField(memeId, commentId, username) {
+    const input = document.getElementById('comment-input-' + memeId);
+    const parentInput = document.getElementById('parent-id-' + memeId);
+    const indicator = document.getElementById('reply-indicator-' + memeId);
+    const userSpan = document.getElementById('reply-to-user-' + memeId);
+    
+    parentInput.value = commentId;
+    userSpan.innerText = '@' + username;
+    indicator.style.display = 'block';
+    input.focus();
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelReply(memeId) {
+    document.getElementById('parent-id-' + memeId).value = '';
+    document.getElementById('reply-indicator-' + memeId).style.display = 'none';
+}
+
+async function submitComment(event, memeId) {
+    event.preventDefault();
+    const input = document.getElementById('comment-input-' + memeId);
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const res = await fetch(`/comment/${memeId}/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    });
+    
+    const data = await res.json();
+    if (data.status === 'success') {
+        input.value = '';
+        cancelReply(memeId);
+        
+        const list = document.getElementById('comments-list-' + memeId);
+        const noComments = document.getElementById('no-comments-' + memeId);
+        if (noComments) noComments.remove();
+        
+        if (data.is_reply) {
+            const repliesContainer = document.getElementById('replies-' + data.parent_id);
+            const newReply = document.createElement('div');
+            newReply.innerHTML = `
+                <div class="comment-item reply-item">
+                    <a href="/profile/${data.username}/">
+                        <img src="${data.profile_pic_url}" class="comment-avatar-img small" alt="${data.username}">
+                    </a>
+                    <div class="comment-bubble">
+                        <a href="/profile/${data.username}/" class="text-decoration-none">
+                            <span class="comment-author">@${data.username}</span>
+                        </a>
+                        <div class="comment-content">${data.content}</div>
+                    </div>
+                </div>
+                <div class="comment-actions reply-item" style="margin-top: -5px;">
+                    <a href="javascript:void(0)" class="comment-action-link" onclick="likeComment('${data.comment_id}')" id="comment-like-${data.comment_id}">Like</a>
+                    <span class="text-muted small">Just now</span>
+                </div>
+            `;
+            repliesContainer.appendChild(newReply);
+        } else {
+            const newComment = document.createElement('div');
+            newComment.className = 'comment-wrapper';
+            newComment.id = 'comment-wrapper-' + data.comment_id;
+            newComment.innerHTML = `
+                <div class="comment-item">
+                    <a href="/profile/${data.username}/">
+                        <img src="${data.profile_pic_url}" class="comment-avatar-img" alt="${data.username}">
+                    </a>
+                    <div class="comment-bubble">
+                        <a href="/profile/${data.username}/" class="text-decoration-none">
+                            <span class="comment-author">@${data.username}</span>
+                        </a>
+                        <div class="comment-content">${data.content}</div>
+                    </div>
+                </div>
+                <div class="comment-actions">
+                    <a href="javascript:void(0)" class="comment-action-link" onclick="likeComment('${data.comment_id}')" id="comment-like-${data.comment_id}">Like</a>
+                    <a href="javascript:void(0)" class="comment-action-link" onclick="showReplyField('${memeId}', '${data.comment_id}', '${data.username}')">Reply</a>
+                    <span class="text-muted small">Just now</span>
+                </div>
+                <div class="replies-container" id="replies-${data.comment_id}"></div>
+            `;
+            list.appendChild(newComment);
+        }
+        
+        document.getElementById('comment-count-' + memeId).innerText = `${data.total_comments} comments`;
+    }
+}
+</script>
+{% endblock %}

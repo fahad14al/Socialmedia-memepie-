@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms & Privacy • MemePie{% endblock %}
+
+{% block content %}
+<div class="mx-auto" style="max-width: 720px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{% url 'settings' %}" class="text-muted text-decoration-none"><i class="bi bi-arrow-left fs-5"></i></a>
+        <div>
+            <h5 class="mb-0 fw-bold">Terms &amp; Privacy Policy</h5>
+            <small class="text-muted">Last updated: February 2026</small>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="termsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4 fw-semibold" id="terms-tab" data-bs-toggle="pill" data-bs-target="#terms" type="button">Terms of Service</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 fw-semibold" id="privacy-tab" data-bs-toggle="pill" data-bs-target="#privacy" type="button">Privacy Policy</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Terms of Service -->
+        <div class="tab-pane fade show active" id="terms" role="tabpanel">
+            <div class="glass-card rounded-4 p-4 policy-body">
+                <h6 class="fw-bold mb-3">1. Acceptance of Terms</h6>
+                <p>By accessing or using MemePie, you agree to be bound by these Terms of Service. If you do not agree, you may not use our platform.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">2. Eligibility</h6>
+                <p>You must be at least 18 years old to create an account and use our services. By registering, you confirm that you meet this age requirement.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">3. User Conduct</h6>
+                <p>You agree not to post content that is hateful, violent, sexually explicit, or violates any applicable laws. MemePie reserves the right to remove content or suspend accounts that violate these rules.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">4. Intellectual Property</h6>
+                <p>You retain ownership of content you post on MemePie. By posting, you grant MemePie a non-exclusive, royalty-free license to display your content on the platform.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">5. Termination</h6>
+                <p>We may suspend or terminate your account at any time for violations of these Terms. You may also delete your account at any time from your settings.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">6. Limitation of Liability</h6>
+                <p>MemePie is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of our platform.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">7. Changes to Terms</h6>
+                <p>We may update these Terms at any time. Continued use of the platform after changes constitutes acceptance of the new Terms.</p>
+            </div>
+        </div>
+
+        <!-- Privacy Policy -->
+        <div class="tab-pane fade" id="privacy" role="tabpanel">
+            <div class="glass-card rounded-4 p-4 policy-body">
+                <h6 class="fw-bold mb-3">1. Information We Collect</h6>
+                <p>We collect information you provide during registration (username, email, date of birth, profile picture) and content you post on the platform.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">2. How We Use Your Information</h6>
+                <p>Your information is used to operate the platform, personalise your experience, and communicate with you. We do not sell your personal data to third parties.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">3. Cookies</h6>
+                <p>MemePie uses session cookies to keep you logged in. No third-party tracking cookies are used.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">4. Data Security</h6>
+                <p>We use industry-standard security measures to protect your data, including password hashing and encrypted connections (HTTPS).</p>
+
+                <h6 class="fw-bold mb-3 mt-4">5. Your Rights</h6>
+                <p>You have the right to access, correct, or delete your personal data at any time through your account settings or by contacting us.</p>
+
+                <h6 class="fw-bold mb-3 mt-4">6. Contact Us</h6>
+                <p>For privacy-related questions, contact us at <strong>privacy@memepie.app</strong>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.policy-body {
+    line-height: 1.75;
+    color: var(--text-main);
+}
+.policy-body p {
+    color: var(--text-muted);
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

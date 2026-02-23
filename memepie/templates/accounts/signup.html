@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Signup - MemePie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="auth-card p-0 overflow-hidden">
+            <div class="row g-0">
+                <!-- Sidebar Decor -->
+                <div class="col-md-5 auth-sidebar d-none d-md-flex">
+                    <h1 class="fw-bold mb-4">MemePie</h1>
+                    <p class="lead mb-0">Join the world's freshest community of meme lovers and creators.</p>
+                </div>
+                
+                <!-- Signup Form -->
+                <div class="col-md-7 p-4 p-lg-5">
+                    <div class="auth-header text-center text-md-start mb-4">
+                        <h2 class="h3">Create Account</h2>
+                        <p>Join the MemePie community.</p>
+                    </div>
+                    
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    {{ form.first_name }}
+                                </div>
+                                {{ form.first_name.errors }}
+                            </div>
+                            <div class="col-6">
+                                {{ form.last_name }}
+                                {{ form.last_name.errors }}
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-at"></i></span>
+                                    {{ form.username }}
+                                </div>
+                                {{ form.username.errors }}
+                            </div>
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    {{ form.email }}
+                                </div>
+                                {{ form.email.errors }}
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small mb-1 text-muted">Birth Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                    {{ form.birth_date }}
+                                </div>
+                                {{ form.birth_date.errors }}
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1 text-muted">Gender</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                                    {{ form.gender }}
+                                </div>
+                                {{ form.gender.errors }}
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                                    {{ form.website }}
+                                </div>
+                                {{ form.website.errors }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small mb-1 text-muted">Bio</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                {{ form.bio }}
+                            </div>
+                            {{ form.bio.errors }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small mb-1 text-muted">Profile Picture</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-image"></i></span>
+                                {{ form.profile_pic }}
+                            </div>
+                            {{ form.profile_pic.errors }}
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                    <input type="password" name="password1" class="form-control" placeholder="Password" required>
+                                </div>
+                                {{ form.password1.errors }}
+                            </div>
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                                    <input type="password" name="password2" class="form-control" placeholder="Confirm" required>
+                                </div>
+                                {{ form.password2.errors }}
+                            </div>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger mb-3 p-2 small">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-auth py-2 mb-3">Sign Up</button>
+                    </form>
+                    
+                    <div class="text-center text-md-start border-top pt-3 mt-3">
+                        <span class="text-muted small">Already baked?</span>
+                        <a href="{% url 'login' %}" class="small text-decoration-none fw-bold ms-1">Log In</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

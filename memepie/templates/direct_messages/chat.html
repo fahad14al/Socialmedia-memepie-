@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ other_user.username }} • Chat{% endblock %}
+
+{% block content %}
+<div class="row g-0 inbox-wrapper glass-card overflow-hidden">
+    <!-- Threads Sidebar (Desktop only) -->
+    <div class="col-md-4 border-end inbox-sidebar d-none d-md-flex flex-column">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header p-3 border-bottom d-flex align-items-center gap-2">
+            <img src="{{ user.profile.profile_pic.url }}" class="rounded-circle" width="28" height="28" style="object-fit:cover;">
+            <span class="fw-bold fs-6 text-truncate">{{ user.username }}</span>
+        </div>
+
+        <!-- Sidebar Tabs -->
+        <div class="d-flex border-bottom text-center" id="sidebar-tabs">
+            <button class="sidebar-tab flex-grow-1 py-2 border-0 bg-transparent small fw-bold active" data-tab="primary">
+                Primary {% if primary_count > 0 %}<span class="badge rounded-pill bg-primary ms-1" style="font-size:0.6rem;">{{ primary_count }}</span>{% endif %}
+            </button>
+            <button class="sidebar-tab flex-grow-1 py-2 border-0 bg-transparent small fw-bold" data-tab="requests">
+                Requests {% if request_count > 0 %}<span class="badge rounded-pill bg-secondary ms-1" style="font-size:0.6rem;">{{ request_count }}</span>{% endif %}
+            </button>
+        </div>
+
+        <!-- Thread Lists -->
+        <div class="thread-list overflow-auto flex-grow-1">
+            <!-- Primary Threads Panel -->
+            <div id="panel-primary">
+                {% for t in primary_threads %}
+                    {% with other=t.other_user %}
+                    {% if other %}
+                    <a href="{% url 'chat_detail' t.id %}" class="thread-item d-flex align-items-center p-3 text-decoration-none border-bottom {% if t.id == thread.id %}active{% endif %} {% if t.is_unread %}unread{% endif %}">
+                        <div class="position-relative me-3 flex-shrink-0">
+                            <img src="{{ other.profile.profile_pic.url }}" class="rounded-circle" width="50" height="50" style="object-fit:cover;">
+                            {% if t.is_unread %}
+                                <span class="online-indicator"></span>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <h6 class="mb-0 text-dark fw-bold text-truncate" style="font-size:0.9rem;">{{ other.username }}</h6>
+                                <small class="text-muted flex-shrink-0 ms-2" style="font-size:0.72rem;">{{ t.updated_at|timesince }}</small>
+                            </div>
+                            <p class="mb-0 text-muted text-truncate" style="font-size:0.8rem;">
+                                {% if t.last_message %}
+                                    {% if t.last_message.sender == request.user %}You: {% endif %}
+                                    {% if t.last_message.text %}{{ t.last_message.text|truncatechars:28 }}{% else %}Shared a meme{% endif %}
+                                {% else %}
+                                    No messages yet
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% if t.is_unread %}
+                            <div class="unread-dot ms-2 flex-shrink-0"></div>
+                        {% endif %}
+                    </a>
+                    {% endif %}
+                    {% endwith %}
+                {% empty %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-chat-dots fs-3 d-block mb-2 opacity-50"></i>
+                        <small>No primary messages yet.</small>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Request Threads Panel -->
+            <div id="panel-requests" class="d-none">
+                {% for t in request_threads %}
+                    {% with other=t.other_user %}
+                    {% if other %}
+                    <a href="{% url 'chat_detail' t.id %}" class="thread-item d-flex align-items-center p-3 text-decoration-none border-bottom {% if t.id == thread.id %}active{% endif %}">
+                        <div class="position-relative me-3 flex-shrink-0">
+                            <img src="{{ other.profile.profile_pic.url }}" class="rounded-circle" width="50" height="50" style="object-fit:cover; filter: grayscale(30%);">
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <h6 class="mb-0 text-dark fw-bold text-truncate" style="font-size:0.9rem;">{{ other.username }}</h6>
+                                <small class="text-muted flex-shrink-0 ms-2" style="font-size:0.72rem;">{{ t.updated_at|timesince }}</small>
+                            </div>
+                            <p class="mb-0 text-muted text-truncate" style="font-size:0.8rem;">
+                                {% if t.last_message %}
+                                    {% if t.last_message.text %}{{ t.last_message.text|truncatechars:28 }}{% else %}Shared a meme{% endif %}
+                                {% else %}
+                                    No messages yet
+                                {% endif %}
+                            </p>
+                        </div>
+                        <i class="bi bi-clock-history text-muted ms-2 flex-shrink-0" style="font-size:0.8rem;"></i>
+                    </a>
+                    {% endif %}
+                    {% endwith %}
+                {% empty %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                        <small>No message requests.</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Chat Area -->
+    <div class="col-12 col-md-8 d-flex flex-column bg-white h-100">
+        <!-- Chat Header -->
+        <div class="p-3 border-bottom d-flex align-items-center chat-header-bar">
+            <a href="{% url 'inbox' %}" class="d-md-none me-3 text-dark">
+                <i class="bi bi-chevron-left fs-4"></i>
+            </a>
+            <a href="{% url 'user_profile' other_user.username %}" class="d-flex align-items-center text-decoration-none text-dark">
+                <img src="{{ other_user.profile.profile_pic.url }}" class="rounded-circle me-2" width="38" height="38" style="object-fit:cover; border: 2px solid var(--border-color);">
+                <div>
+                    <h6 class="mb-0 fw-bold" style="font-size:0.95rem;">{{ other_user.username }}</h6>
+                    {% if other_user.profile.bio %}
+                        <small class="text-muted" style="font-size:0.75rem;">{{ other_user.profile.bio|truncatechars:40 }}</small>
+                    {% endif %}
+                </div>
+            </a>
+            <a href="{% url 'user_profile' other_user.username %}" class="ms-auto text-muted" title="View Profile">
+                <i class="bi bi-info-circle fs-5"></i>
+            </a>
+        </div>
+        
+        <!-- Messages Area -->
+        <div class="chat-messages p-4 flex-grow-1 overflow-auto" id="message-container" style="height: 60vh; display: flex; flex-direction: column;">
+            {% for message in chat_messages %}
+                <div class="message-bubble-wrapper d-flex mb-1 {% if message.sender == request.user %}justify-content-end{% endif %}">
+                    {% if message.sender != request.user %}
+                        <img src="{{ message.sender.profile.profile_pic.url }}" class="rounded-circle me-2 align-self-end mb-1" width="24" height="24" style="object-fit: cover;">
+                    {% endif %}
+                    
+                    <div class="message-bubble p-2 px-3 rounded-4 shadow-sm {% if message.sender == request.user %}bg-primary text-white sender-bubble{% else %}bg-white text-dark user-bubble{% endif %}" style="max-width: 70%;">
+                        {% if message.meme %}
+                            <a href="{% url 'home' %}#post-{{ message.meme.id }}" class="text-decoration-none text-dark">
+                                <div class="shared-meme mb-2 rounded overflow-hidden shadow-sm">
+                                    <img src="{{ message.meme.image.url }}" class="img-fluid">
+                                    <div class="bg-dark bg-opacity-10 p-2 small text-truncate">
+                                        {{ message.meme.caption }}
+                                    </div>
+                                </div>
+                            </a>
+                        {% endif %}
+                        <p class="mb-0">{{ message.text }}</p>
+                    </div>
+                </div>
+                {% if message.sender == request.user and forloop.last and message.is_read %}
+                    <div class="d-flex justify-content-end mb-3" style="margin-top: -8px;">
+                        <div class="d-flex align-items-center gap-1">
+                            <span style="font-size: 0.65rem; color: #8e8e8e; font-weight: 500;">Seen</span>
+                            <img src="{{ other_user.profile.profile_pic.url }}" class="rounded-circle" width="12" height="12" style="object-fit: cover;">
+                        </div>
+                    </div>
+                {% elif not forloop.last %}
+                    <div class="mb-2"></div>
+                {% endif %}
+            {% empty %}
+                <div class="text-center text-muted my-auto">
+                    <img src="{{ other_user.profile.profile_pic.url }}" class="rounded-circle mb-3" width="96" height="96" style="object-fit: cover;">
+                    <h5 class="fw-bold">{{ other_user.username }}</h5>
+                    <p class="text-muted small">Messaging on MemePie</p>
+                    <a href="{% url 'user_profile' other_user.username %}" class="btn btn-outline-dark btn-sm rounded-pill px-3">View Profile</a>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Message Input or Request Banner -->
+        <div class="p-3 border-top mt-auto bg-white">
+            {% if is_request %}
+                <div class="text-center py-3">
+                    <p class="small text-muted mb-3">Accepting this request will allow {{ other_user.username }} to message you and move this thread to your primary inbox.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <form action="{% url 'accept_request' thread.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold small">Accept</button>
+                        </form>
+                        <form action="{% url 'decline_request' thread.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4 fw-bold small">Decline</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <form action="" method="POST" class="d-flex align-items-center gap-2">
+                    {% csrf_token %}
+                    <div class="message-input-wrapper flex-grow-1 position-relative">
+                        <input type="text" name="text" id="msg-input" class="form-control rounded-pill py-2 px-4 shadow-none" placeholder="Message..." autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn btn-link text-primary fw-bold text-decoration-none px-1" id="send-btn">
+                        <i class="bi bi-send-fill fs-5"></i>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Scroll to bottom of messages
+    function scrollToBottom() {
+        const container = document.getElementById('message-container');
+        if (container) container.scrollTop = container.scrollHeight;
+    }
+    scrollToBottom();
+    window.addEventListener('load', scrollToBottom);
+
+    // Sidebar tab switching
+    const tabs = document.querySelectorAll('.sidebar-tab');
+    const panels = { primary: document.getElementById('panel-primary'), requests: document.getElementById('panel-requests') };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const target = tab.dataset.tab;
+            Object.entries(panels).forEach(([key, panel]) => {
+                if (panel) panel.classList.toggle('d-none', key !== target);
+            });
+        });
+    });
+
+    // If current thread is a request, auto-activate the requests tab
+    {% if is_request %}
+    const reqTab = document.querySelector('[data-tab="requests"]');
+    if (reqTab) reqTab.click();
+    {% endif %}
+
+    // Send button enabled/disabled based on input
+    const msgInput = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+    if (msgInput && sendBtn) {
+        msgInput.addEventListener('input', () => {
+            sendBtn.style.opacity = msgInput.value.trim() ? '1' : '0.4';
+        });
+        sendBtn.style.opacity = '0.4';
+    }
+
+    // Auto refresh every 5 seconds for Seen indicator & new messages
+    setTimeout(() => location.reload(), 5000);
+</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Settings • MemePie{% endblock %}
+
+{% block content %}
+<div class="settings-wrapper mx-auto" style="max-width: 680px;">
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4 gap-3">
+        <img src="{{ user.profile.profile_pic.url }}" class="rounded-circle" width="52" height="52" style="object-fit:cover; border: 2px solid var(--border-color);">
+        <div>
+            <h5 class="mb-0 fw-bold">{{ user.username }}</h5>
+            <small class="text-muted">Manage your account</small>
+        </div>
+    </div>
+
+    <!-- Settings Sections -->
+    <div class="settings-section-label">Account</div>
+    <div class="settings-card">
+        <a href="{% url 'profile_edit' %}" class="settings-item">
+            <div class="settings-icon bg-primary-soft"><i class="bi bi-person-fill text-primary"></i></div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">Edit Profile</div>
+                <small class="text-muted">Update your name, bio, and photo</small>
+            </div>
+            <i class="bi bi-chevron-right text-muted"></i>
+        </a>
+        <a href="{% url 'change_password' %}" class="settings-item">
+            <div class="settings-icon bg-warning-soft"><i class="bi bi-shield-lock-fill text-warning"></i></div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">Change Password</div>
+                <small class="text-muted">Update your password securely</small>
+            </div>
+            <i class="bi bi-chevron-right text-muted"></i>
+        </a>
+    </div>
+
+    <div class="settings-section-label">Privacy & Safety</div>
+    <div class="settings-card">
+        <a href="{% url 'blocked_accounts' %}" class="settings-item">
+            <div class="settings-icon bg-danger-soft"><i class="bi bi-slash-circle-fill text-danger"></i></div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">Blocked Accounts</div>
+                <small class="text-muted">Manage who you've blocked</small>
+            </div>
+            <i class="bi bi-chevron-right text-muted"></i>
+        </a>
+    </div>
+
+
+
+    <div class="settings-section-label">About</div>
+    <div class="settings-card">
+        <a href="{% url 'terms_policy' %}" class="settings-item">
+            <div class="settings-icon bg-success-soft"><i class="bi bi-file-text-fill text-success"></i></div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">Terms &amp; Privacy Policy</div>
+                <small class="text-muted">Read our terms and privacy policy</small>
+            </div>
+            <i class="bi bi-chevron-right text-muted"></i>
+        </a>
+    </div>
+
+    <div class="settings-card mt-2">
+        <a href="{% url 'logout' %}" class="settings-item text-danger">
+            <div class="settings-icon bg-danger-soft"><i class="bi bi-box-arrow-right text-danger"></i></div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">Log Out</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<script>
+    const toggle = document.getElementById('darkModeToggle');
+    const isDark = localStorage.getItem('memepie-theme') === 'dark';
+    if (isDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        toggle.checked = true;
+    }
+    toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('memepie-theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('memepie-theme', 'light');
+        }
+    });
+</script>
+{% endblock %}
