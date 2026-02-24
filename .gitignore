@@ -19,7 +19,7 @@ venv.bak/
 
 # Static and Media
 staticfiles/
-media/
+# media/
 
 # Environment Variables
 .env
