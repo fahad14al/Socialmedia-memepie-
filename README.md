@@ -2,6 +2,8 @@
 
 MemePie is a fully-featured, Django-based social media web application designed for meme enthusiasts. It provides a platform to share, discover, interact with memes, and connect with other users in a dynamic community.
 
+APP link : https://mempie.pythonanywhere.com/
+
 ## 🚀 Features
 
 - **User Accounts & Profiles**: Secure user registration, authentication, customizable profiles (bio, profile picture).
