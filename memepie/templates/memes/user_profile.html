@@ -95,6 +95,23 @@
                             </a>
                             <span class="post-date text-muted small">{{ meme.created_at|timesince }} ago</span>
                         </div>
+
+                        {% if user.is_authenticated %}
+                        <div class="dropdown ms-auto">
+                            <button class="btn btn-link text-dark p-0 text-decoration-none" type="button" id="profilePostMenu{{ meme.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="profilePostMenu{{ meme.id }}">
+                                {% if user == meme.author %}
+                                <li><a class="dropdown-item" href="{% url 'edit_meme' meme.id %}"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'delete_meme' meme.id %}"><i class="bi bi-trash me-2"></i>Delete Post</a></li>
+                                {% else %}
+                                <li><a class="dropdown-item" href="{% url 'report_meme' meme.id %}"><i class="bi bi-flag me-2"></i>Report Post</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Caption -->

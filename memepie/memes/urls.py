@@ -4,6 +4,9 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('upload/', views.upload_meme, name='upload_meme'),
+    path('edit/<int:meme_id>/', views.edit_meme, name='edit_meme'),
+    path('delete/<int:meme_id>/', views.delete_meme, name='delete_meme'),
+    path('report/<int:meme_id>/', views.report_meme, name='report_meme'),
     path('like/<int:meme_id>/', views.like_meme, name='like_meme'),
     path('comment/<int:meme_id>/', views.add_comment, name='add_comment'),
     path('comment/like/<int:comment_id>/', views.like_comment, name='like_comment'),

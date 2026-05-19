@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Meme, Comment, Notification, Follow
+from .models import Meme, Comment, Notification, Follow, MemeReport
 from accounts.models import Block
 from .forms import MemeForm, CommentForm
 from django.contrib import messages
@@ -129,6 +129,39 @@ def upload_meme(request):
     else:
         form = MemeForm()
     return render(request, 'memes/upload.html', {'form': form})
+
+@login_required
+def edit_meme(request, meme_id):
+    meme = get_object_or_404(Meme, id=meme_id, author=request.user)
+    if request.method == 'POST':
+        # We only allow changing caption mostly, but using MemeForm is fine.
+        form = MemeForm(request.POST, request.FILES, instance=meme)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Meme updated successfully!')
+            return redirect('home')
+    else:
+        form = MemeForm(instance=meme)
+    return render(request, 'memes/edit_meme.html', {'form': form, 'meme': meme})
+
+@login_required
+def delete_meme(request, meme_id):
+    meme = get_object_or_404(Meme, id=meme_id, author=request.user)
+    if request.method == 'POST':
+        meme.delete()
+        messages.success(request, 'Meme deleted successfully!')
+        return redirect('home')
+    return render(request, 'memes/delete_meme.html', {'meme': meme})
+
+@login_required
+def report_meme(request, meme_id):
+    meme = get_object_or_404(Meme, id=meme_id)
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        MemeReport.objects.create(meme=meme, reporter=request.user, reason=reason)
+        messages.success(request, 'Meme reported successfully. Thank you for keeping MemePie safe.')
+        return redirect('home')
+    return render(request, 'memes/report_meme.html', {'meme': meme})
 
 from django.http import JsonResponse
 

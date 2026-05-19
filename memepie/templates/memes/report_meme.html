@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Post - MemePie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="auth-card">
+            <div class="auth-header text-center text-warning">
+                <h2>Report Post</h2>
+            </div>
+            <div>
+                <p class="text-center">Please tell us why you are reporting this post. Your report will be kept anonymous.</p>
+                
+                <div class="post-image-container mb-4 text-center">
+                    <img src="{{ meme.image.url }}" class="img-fluid rounded" alt="{{ meme.caption }}" style="max-height: 150px; object-fit: cover;">
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="reason" class="form-label fw-bold">Reason for reporting</label>
+                        <select name="reason" id="reason" class="form-select" required>
+                            <option value="">Select a reason...</option>
+                            <option value="spam">It's spam</option>
+                            <option value="inappropriate">Inappropriate content</option>
+                            <option value="harassment">Harassment or bullying</option>
+                            <option value="hate_speech">Hate speech or symbols</option>
+                            <option value="false_information">False information</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4 py-2" style="border-radius: 8px;">Cancel</a>
+                        <button type="submit" class="btn btn-warning px-4 py-2" style="border-radius: 8px;">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
